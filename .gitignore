@@ -1,2 +1,3 @@
 /distribution/vscode/placement-checker/node_modules/
 /distribution/vscode/placement-checker/*.vsix
+/distribution/vscode/placement-checker/dist/
