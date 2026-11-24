@@ -1,0 +1,52 @@
+name: Publish the accepted VSIX to Visual Studio Marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: GitHub release tag for the accepted VSIX
+        required: true
+        type: string
+      release_commit:
+        description: Approved commit containing this workflow
+        required: true
+        type: string
+      candidate_sha256:
+        description: SHA-256 of the accepted VSIX
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  publish:
+    if: github.repository == 'hboon/linkbunny-placement-checker-vscode' && github.ref == 'refs/heads/main' && github.sha == inputs.release_commit && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Verify the accepted release asset
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          CANDIDATE_SHA256: ${{ inputs.candidate_sha256 }}
+        shell: bash
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$CANDIDATE_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          vsix_name="linkbunny-placement-checker-${RELEASE_TAG#v}.vsix"
+          curl --fail --silent --show-error --location --proto '=https' --max-time 60 \
+            --output "$RUNNER_TEMP/accepted.vsix" \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/$vsix_name"
+          printf '%s  %s\n' "$CANDIDATE_SHA256" "$RUNNER_TEMP/accepted.vsix" | sha256sum --check --strict
+          unzip -p "$RUNNER_TEMP/accepted.vsix" extension/package.json | jq -e \
+            --arg version "${RELEASE_TAG#v}" \
+            '.publisher == "linkbunny" and .name == "linkbunny-placement-checker" and .version == $version'
+      - name: Publish once with Trusted Publishing
+        shell: bash
+        run: npm exec --yes --package=@vscode/vsce@4.1.1 -- vsce publish --oidc --packagePath "$RUNNER_TEMP/accepted.vsix"

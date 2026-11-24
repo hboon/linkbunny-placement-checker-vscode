@@ -1,0 +1,59 @@
+{
+  "name": "linkbunny-placement-checker",
+  "displayName": "LinkBunny Backlink Checker MCP Server",
+  "description": "Adds LinkBunny's free hosted MCP server that checks one published page for a backlink's destination, anchor text and nofollow status.",
+  "version": "1.0.0",
+  "publisher": "linkbunny",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "icon": "assets/logo.png",
+  "homepage": "https://getlinkbunny.com/tools/backlink-placement-checker",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hboon/linkbunny-placement-checker-vscode.git"
+  },
+  "bugs": {
+    "url": "https://getlinkbunny.com/about"
+  },
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "keywords": [
+    "mcp",
+    "backlinks",
+    "nofollow",
+    "html",
+    "seo"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "linkbunnyPlacementChecker",
+        "label": "LinkBunny Placement Checker"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "test": "bun run build && bun test test",
+    "package": "bun run build && vsce package --no-dependencies --out",
+    "verify:install": "bun scripts/verify-local-install.ts",
+    "lint": "prettier --check src scripts test package.json tsconfig.json tsconfig.test.json README.md RELEASE.md CHANGELOG.md",
+    "format": "prettier --write src scripts test package.json tsconfig.json tsconfig.test.json README.md RELEASE.md CHANGELOG.md"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2",
+    "@types/node": "^22.0.0",
+    "@types/vscode": "1.101.0",
+    "@vscode/vsce": "4.1.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.0"
+  }
+}
